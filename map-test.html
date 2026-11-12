@@ -1,0 +1,25 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>VYA map test 2</title>
+<style>body{font:16px/1.4 system-ui,sans-serif;margin:0;padding:16px;background:#f3f2ee;color:#161616}h1{font-size:24px;margin:0 0 4px}p{color:#5f5b4e;margin:4px 0 14px}input{width:100%;box-sizing:border-box;padding:14px;font-size:16px;border:0;border-radius:14px;background:#fff}button{width:100%;margin-top:10px;padding:14px;font-size:16px;font-weight:600;border:0;border-radius:14px;background:#e78b3b;color:#161616}
+.q{background:#fff;border-radius:16px;padding:14px;margin-top:12px}.q b{display:block}.q .u{font-size:12px;color:#5f5b4e;word-break:break-all;margin-bottom:6px}.r{padding:7px 0;border-top:1px solid #eee;font-size:14px}.r small{color:#5f5b4e;display:block}.none{color:#a33;font-size:14px}a{color:#315a2b;font-weight:600}.ok{color:#315a2b}</style></head><body>
+<h1>VYA map test 2</h1><p>Same text, sent six different ways. Tells us whether the data is missing or our search is asking wrongly.</p>
+<input id="t" value="567 fi road"><button id="go">Test</button><div id="out"></div>
+<script>
+const KEY='3ef7fec6ea8a4bd89a1c62606425f248',B='https://api.geoapify.com/v1/geocode/',F='filter=circle:25.60,-33.96,45000&bias=proximity:25.60,-33.96&lang=en',BO='bias=proximity:25.60,-33.96&lang=en',
+ E=encodeURIComponent,esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function modes(t){const m=t.match(/^\s*(\d{1,5}[a-z]?)\s+(.{2,})$/i);const o=[
+ ['1 App today: autocomplete, 45 km circle, 5 results',B+'autocomplete?text='+E(t)+'&'+F+'&limit=5&format=json'],
+ ['2 Autocomplete, no circle, bias only, 10 results',B+'autocomplete?text='+E(t)+'&'+BO+'&limit=10&format=json'],
+ ['3 Search with ", Gqeberha" added (old test)',B+'search?text='+E(t+', Gqeberha')+'&'+F+'&limit=5&format=json'],
+ ['4 Search, text as typed, 45 km circle',B+'search?text='+E(t)+'&'+F+'&limit=5&format=json'],
+ ['5 Search, text as typed, bias only',B+'search?text='+E(t)+'&'+BO+'&limit=5&format=json']];
+ if(m)o.push(['6 House number and street split, no city',B+'search?housenumber='+E(m[1])+'&street='+E(m[2])+'&country=South%20Africa&'+F+'&limit=5&format=json']);
+ return o}
+document.getElementById('go').onclick=async()=>{const out=document.getElementById('out');out.innerHTML='';const t=document.getElementById('t').value;if(!t.trim())return;
+ for(const [name,u] of modes(t)){const d=document.createElement('div');d.className='q';d.innerHTML='<b>'+esc(name)+'</b><div>Searching…</div>';out.appendChild(d);
+  let h='<b>'+esc(name)+'</b>';
+  try{const r=await fetch(u+'&apiKey='+KEY);if(!r.ok)throw new Error('Geoapify '+r.status+(r.status==401||r.status==403?' – open this page from your VYA site':''));
+   const j=(await r.json()).results||[];
+   h+=j.length?j.map(x=>`<div class="r">${esc(x.address_line1||x.name||x.formatted)}<small>${esc(x.address_line2||'')} · ${esc(x.result_type||'')}${x.housenumber?' · house number '+esc(x.housenumber):''} · <a target="_blank" rel="noopener" href="https://www.openstreetmap.org/?mlat=${x.lat}&mlon=${x.lon}#map=18/${x.lat}/${x.lon}">map</a></small></div>`).join(''):'<div class="none">Nothing found</div>'}
+  catch(e){h+='<div class="none">'+esc(e.message)+'</div>'}
+  d.innerHTML=h;await new Promise(r=>setTimeout(r,300))}};
+</script></body></html>
